@@ -83,7 +83,8 @@ contract Rebalancor {
         onlyPoolOwner
     {
         for (uint256 i = 0; i < _index.length; i++) {
-            weights.set(_index[i], _weights[i]);
+            uint256 w = _weights[i];
+            // weights.set(_index[i], _weights[i]);
         }
 
         cadence = _cadence;

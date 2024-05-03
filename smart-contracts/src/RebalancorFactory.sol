@@ -12,8 +12,9 @@ contract Factory {
     mapping(address => address[]) public smartPools;
 
     /// @param _poolName The name of the pool
-    function createRebalancor(string memory _poolName) external {
+    function createRebalancor(string memory _poolName) external returns (address) {
         address rebalancor = address(new Rebalancor(msg.sender, _poolName));
         smartPools[msg.sender].push(rebalancor);
+        return rebalancor;
     }
 }

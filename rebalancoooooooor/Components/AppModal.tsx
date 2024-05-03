@@ -1,9 +1,11 @@
 import { useState } from "react";
 import Head from "next/head";
 import Popup from "./Popup"; // Import Popup component
+import { useAccount, useEnsName } from "wagmi";
 
 export default function AppModal() {
   const [showPopup, setShowPopup] = useState(false);
+  const { address } = useAccount();
 
   const handleCreatePool = () => {
     setShowPopup(true);

@@ -9,11 +9,15 @@ contract Rebalancor {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
 
+    address constant KEEPER_ADDY = address(0);
+
     ////////////////////////////////////////////////////////////////////////////
     // STORAGE
     ////////////////////////////////////////////////////////////////////////////
 
     address public poolOwner;
+
+    string public poolName;
 
     uint256 public cadence;
 
@@ -29,8 +33,10 @@ contract Rebalancor {
 
     error NotPoolOwner(address sender);
 
-    constructor(address _poolOwner) {
+    constructor(address _poolOwner, string memory _poolName) {
         poolOwner = _poolOwner;
+
+        poolName = _poolName;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -39,6 +45,11 @@ contract Rebalancor {
 
     modifier onlyPoolOwner() {
         if (msg.sender != poolOwner) revert NotPoolOwner(msg.sender);
+        _;
+    }
+
+    modifier onlyKeeper() {
+        if (msg.sender != KEEPER_ADDY) revert NotPoolOwner(msg.sender);
         _;
     }
 
@@ -59,22 +70,39 @@ contract Rebalancor {
         shift = _shift;
     }
 
+    function pullAssets() external {
+        address[] memory _assets = assets.values();
+        for (uint256 i = 0; i < _assets.length; i++) {
+            address token = assets.at(i);
+            IERC20(token).transferFrom(poolOwner, address(this), IERC20(token).balanceOf(poolOwner));
+        }
+    }
+
     function update(uint256[] memory _index, uint256[] memory _weights, uint256 _cadence, uint256 _shift)
         external
         onlyPoolOwner
     {
-        // 1. update all weights
+        for (uint256 i = 0; i < _index.length; i++) {
+            weights.set(_index[i], _weights[i]);
+        }
+
+        cadence = _cadence;
+        shift = _shift;
     }
 
     function withdrawAll() external onlyPoolOwner {
-        // 1. withdraw all assets and send to eoa
+        address[] memory _assets = assets.values();
+        for (uint256 i = 0; i < _assets.length; i++) {
+            address token = assets.at(i);
+            IERC20(token).transfer(poolOwner, IERC20(token).balanceOf(address(this)));
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // EXTERNAL: Keeper
     ////////////////////////////////////////////////////////////////////////////
 
-    function rebalance() external {
+    function rebalance() external onlyKeeper {
         // 1. check if it is time to rebalance
         // 2. if yes, then rebalance
     }

@@ -85,6 +85,8 @@ contract Rebalancor is KeeperCompatibleInterface {
         factory = IRebalancorFactory(_factory);
 
         _subscribe(_assets, _weights, _cadence);
+
+        lastRebalance = block.timestamp;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -105,21 +107,6 @@ contract Rebalancor is KeeperCompatibleInterface {
     // EXTERNAL: Portfolio Config
     ////////////////////////////////////////////////////////////////////////////
 
-    /// @param _assets The list of assets to subscribe to.
-    /// @param _weights The list of weights for each asset.
-    /// @param _cadence The time between rebalances.
-    function _subscribe(address[] memory _assets, uint256[] memory _weights, uint256 _cadence) internal {
-        if (_assets.length != _weights.length) revert NotSameLength();
-
-        for (uint256 i = 0; i < _assets.length; i++) {
-            assets.add(_assets[i]);
-            weights.add(_weights[i]);
-            IERC20(_assets[i]).approve(address(AMM), type(uint256).max);
-        }
-
-        cadence = _cadence;
-    }
-
     function pullAssets() external {
         address[] memory _assets = assets.values();
         for (uint256 i = 0; i < _assets.length; i++) {
@@ -137,6 +124,7 @@ contract Rebalancor is KeeperCompatibleInterface {
         cadence = _cadence;
     }
 
+    /// @notice Withdraws all assets from the pool to the owner.
     function withdrawAll() external onlyPoolOwner {
         address[] memory _assets = assets.values();
         for (uint256 i = 0; i < _assets.length; i++) {
@@ -235,6 +223,23 @@ contract Rebalancor is KeeperCompatibleInterface {
     // INTERNAL
     ////////////////////////////////////////////////////////////////////////////
 
+    /// @param _assets The list of assets to subscribe to.
+    /// @param _weights The list of weights for each asset.
+    /// @param _cadence The time between rebalances.
+    function _subscribe(address[] memory _assets, uint256[] memory _weights, uint256 _cadence) internal {
+        if (_assets.length != _weights.length) revert NotSameLength();
+
+        for (uint256 i = 0; i < _assets.length; i++) {
+            assets.add(_assets[i]);
+            weights.add(_weights[i]);
+            IERC20(_assets[i]).approve(address(AMM), type(uint256).max);
+        }
+
+        cadence = _cadence;
+    }
+
+    /// @param _feed The address of the price feed.
+    /// @param _maxStalePeriod The maximum time the feed can be stale.
     function _fetchPriceFeed(address _feed, uint256 _maxStalePeriod) internal view returns (uint256 answer_) {
         (, int256 answer,, uint256 updateTime,) = IAggregatorV3(_feed).latestRoundData();
 

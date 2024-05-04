@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import Head from "next/head";
-import Popup from "./Popup"; // Import Popup component
+import PoolPopup from "./Popup"; // Import Popup component
 import { useAccount, useDisconnect, useEnsName } from "wagmi";
 import { FiCheckCircle } from "react-icons/fi";
 
 import { useReadContract } from "wagmi";
 import { abi } from "../abi/abi";
+import ConfigPopup from "./SubscribeToPoolPopup"; // Import Popup component
 
 export default function AppModal() {
   const [showPopup, setShowPopup] = useState(false);

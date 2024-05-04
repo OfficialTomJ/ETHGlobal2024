@@ -14,6 +14,7 @@ export default function AppModal() {
   const [showConfigPopup, setShowConfigPopup] = useState(false);
   const [walletPools, setWalletPools] = useState([]);
   const [poolCounter, setPoolCounter] = useState(0);
+  const [scaffoldPools, setScaffoldPools] = useState();
   const account = useAccount();
 
   const result = useReadContract({
@@ -24,24 +25,30 @@ export default function AppModal() {
     args: ["0xcb1c77846c34ea44f40b447fae0d2fdf2b4b5919"],
   });
 
-  const fetchedPoolScaffold = {
+  const firstPool = useReadContract({
     abi,
     address: "0x3DD15916591bd382C9462871Bce3729bEb43E586",
     functionName: "smartPools",
-  } as const;
+    //TODO: CHANGE THIS BACK TO account.address
+    args: ["0xcb1c77846c34ea44f40b447fae0d2fdf2b4b5919", 0],
+  });
 
-    const poolResults = useReadContracts({
-      contracts: [
-        {
-          ...fetchedPoolScaffold,
-          args: ["0xcb1c77846c34ea44f40b447fae0d2fdf2b4b5919", 0],
-        },
-        {
-          ...fetchedPoolScaffold,
-          args: ["0xcb1c77846c34ea44f40b447fae0d2fdf2b4b5919", 0],
-        },
-      ],
-    });
+  useEffect(() => {
+
+    if (firstPool && firstPool.data) {
+      console.log(firstPool.data);
+      let poolObject =
+        [{
+          name: firstPool.data[0],
+          address: firstPool.data[1],
+        }];
+      setWalletPools(poolObject);
+    } else {
+      // Handle the case where firstPool or firstPool.data is undefined
+      console.error("Data is undefined");
+    }
+
+  }, [account.address]);
 
   const handleOpenPoolPopup = () => {
     setShowPoolPopup(true);
@@ -58,16 +65,6 @@ export default function AppModal() {
   const handleCloseConfigPopup = () => {
     setShowConfigPopup(false);
   };
-
-    
-  useEffect(() => {
-
-    if (result.data !== undefined) {
-      const parsedPoolCounter = parseInt(result.data.toString());
-      setPoolCounter(parsedPoolCounter);
-      console.log(poolCounter, poolResults);
-    }
-  }, [account.address]);
 
   return (
     <div className="container">

@@ -3,12 +3,15 @@ pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
 
+import {MockV3Aggregator} from "../src/mocks/MockV3Aggregator.sol";
+
 import {ILink} from "../src/interfaces/chainlink/ILink.sol";
 
 import {Factory} from "../src/RebalancorFactory.sol";
 
 contract FactoryScript is Script {
     Factory factory;
+    MockV3Aggregator oracleMock;
 
     ILink constant LINK = ILink(0x779877A7B0D9E8603169DdbD7836e478b4624789);
 

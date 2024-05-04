@@ -19,7 +19,7 @@ contract Rebalancor is KeeperCompatibleInterface {
     ////////////////////////////////////////////////////////////////////////////
 
     uint256 constant MAX_BPS = 10_000;
-    uint256 constant DEVIATION_THRESHOLD = 1_000;
+    uint256 constant DEVIATION_THRESHOLD = 1_000; // 10%
 
     address constant WBTC = 0x29f2D40B0605204364af54EC677bD022dA425d03;
     address constant LINK = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
@@ -48,8 +48,6 @@ contract Rebalancor is KeeperCompatibleInterface {
     uint256 public cadence;
     uint256 public lastRebalance;
 
-    uint256 public shift;
-
     EnumerableSet.UintSet internal weights;
 
     EnumerableSet.AddressSet internal assets;
@@ -60,16 +58,26 @@ contract Rebalancor is KeeperCompatibleInterface {
     // ERRORS
     ////////////////////////////////////////////////////////////////////////////
 
+    error NotSameLength();
+
     error NotPoolOwner(address caller);
     error NotClRegistry(address caller);
 
     error StaleFeed(uint256 currentTime, uint256 updateTime, uint256 maxPeriod);
     error NegativeAnswer(address feed, int256 answer, uint256 timestamp);
 
-    constructor(address _poolOwner, string memory _poolName) {
+    constructor(
+        address _poolOwner,
+        string memory _poolName,
+        address[] memory _assets,
+        uint256[] memory _weights,
+        uint256 _cadence
+    ) {
         poolOwner = _poolOwner;
 
         poolName = _poolName;
+
+        _subscribe(_assets, _weights, _cadence);
 
         assetToOracle[WBTC] = CL_BTC_USD;
         assetToOracle[LINK] = CL_LINK_USD;
@@ -94,10 +102,12 @@ contract Rebalancor is KeeperCompatibleInterface {
     // EXTERNAL: Portfolio Config
     ////////////////////////////////////////////////////////////////////////////
 
-    function subscribe(address[] memory _assets, uint256[] memory _weights, uint256 _cadence, uint256 _shift)
-        external
-        onlyPoolOwner
-    {
+    /// @param _assets The list of assets to subscribe to.
+    /// @param _weights The list of weights for each asset.
+    /// @param _cadence The time between rebalances.
+    function _subscribe(address[] memory _assets, uint256[] memory _weights, uint256 _cadence) internal {
+        if (_assets.length != _weights.length) revert NotSameLength();
+
         for (uint256 i = 0; i < _assets.length; i++) {
             assets.add(_assets[i]);
             weights.add(_weights[i]);
@@ -105,7 +115,6 @@ contract Rebalancor is KeeperCompatibleInterface {
         }
 
         cadence = _cadence;
-        shift = _shift;
     }
 
     function pullAssets() external {
@@ -116,17 +125,13 @@ contract Rebalancor is KeeperCompatibleInterface {
         }
     }
 
-    function update(uint256[] memory _index, uint256[] memory _weights, uint256 _cadence, uint256 _shift)
-        external
-        onlyPoolOwner
-    {
+    function update(uint256[] memory _index, uint256[] memory _weights, uint256 _cadence) external onlyPoolOwner {
         for (uint256 i = 0; i < _index.length; i++) {
             uint256 w = _weights[i];
             // weights.set(_index[i], _weights[i]);
         }
 
         cadence = _cadence;
-        shift = _shift;
     }
 
     function withdrawAll() external onlyPoolOwner {

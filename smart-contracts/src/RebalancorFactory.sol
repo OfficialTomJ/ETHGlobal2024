@@ -43,8 +43,13 @@ contract Factory {
     ////////////////////////////////////////////////////////////////////////////
 
     /// @param _poolName The name of the pool
-    function createRebalancor(string memory _poolName) external returns (address) {
-        address rebalancor = address(new Rebalancor(msg.sender, _poolName));
+    function createRebalancor(
+        string memory _poolName,
+        address[] memory _assets,
+        uint256[] memory _weights,
+        uint256 _cadence
+    ) external returns (address) {
+        address rebalancor = address(new Rebalancor(msg.sender, _poolName, _assets, _weights, _cadence));
 
         uint256 upkeepId = _registerSmartPoolUpkeep(_poolName, rebalancor);
 

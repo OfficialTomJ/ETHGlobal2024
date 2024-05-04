@@ -207,7 +207,7 @@ contract Rebalancor is KeeperCompatibleInterface {
                 address[] memory path = new address[](2);
                 path[0] = token;
                 path[1] = LINK;
-                AMM.swapTokensForExactTokens(rebalanceAmounts[i], 0, path, address(this), block.timestamp);
+                AMM.swapExactTokensForTokens(rebalanceAmounts[i], 0, path, address(this), block.timestamp);
             }
         }
 

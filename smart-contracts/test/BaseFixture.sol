@@ -6,6 +6,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {MockV3Aggregator} from "../src/mocks/MockV3Aggregator.sol";
 
 import {ILink} from "../src/interfaces/chainlink/ILink.sol";
+import {IRouterV2} from "../src/interfaces/uniswap/IRouterV2.sol";
 
 import {Factory} from "../src/RebalancorFactory.sol";
 import {Rebalancor} from "../src/Rebalancor.sol";
@@ -28,7 +29,9 @@ contract BaseFixture is Test {
 
     uint256 constant TOP_UP_AMOUNT = 10e18;
 
-    address constant AMM = 0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008;
+    IRouterV2 constant AMM = IRouterV2(payable(0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008));
+
+    uint256 constant FIVE_MINUTES = 300;
 
     function setUp() public {
         vm.createSelectFork("sepolia", 5833416);
@@ -46,16 +49,21 @@ contract BaseFixture is Test {
         assets[1] = WETH;
 
         uint256[] memory weights = new uint256[](2);
-        weights[0] = 5_000;
-        weights[1] = 5_000;
+        weights[0] = 6_000;
+        weights[1] = 4_000;
 
         vm.prank(DEPLOYER);
         LINK.transfer(address(factory), TOP_UP_AMOUNT);
 
         vm.prank(DEPLOYER);
-        address rebalancorAddress = factory.createRebalancor("test", assets, weights, 300);
+        address rebalancorAddress = factory.createRebalancor("TEST-SUITE", assets, weights, FIVE_MINUTES);
 
         rebalancor = Rebalancor(rebalancorAddress);
+
+        // deal
+        // deal(DAI, DEPLOYER, 100_000e18);
+        // deal(address(LINK), DEPLOYER, 100_000e18);
+        // deal(WETH, DEPLOYER, 100_000e18);
 
         vm.label(address(factory), "FACTORY");
         vm.label(rebalancorAddress, "REBALANCOR");
@@ -64,6 +72,6 @@ contract BaseFixture is Test {
         vm.label(address(LINK), "LINK");
         vm.label(CL_REGISTRAR, "CL_REGISTRAR");
         vm.label(CL_REGISTRY, "CL_REGISTRY");
-        vm.label(AMM, "AMM");
+        vm.label(address(AMM), "AMM");
     }
 }

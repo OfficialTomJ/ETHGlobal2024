@@ -7,3 +7,6 @@ remappings = [
     'forge-std/=lib/forge-std/src/',
     '@oz/=lib/openzeppelin-contracts/contracts/',
 ]
+
+[rpc_endpoints]
+sepolia = "${SEPOLIA_RPC_URL}"

@@ -56,8 +56,6 @@ contract Rebalancor is KeeperCompatibleInterface {
 
     EnumerableSet.AddressSet internal assets;
 
-    mapping(address => address) public assetToOracle;
-
     ////////////////////////////////////////////////////////////////////////////
     // ERRORS
     ////////////////////////////////////////////////////////////////////////////
@@ -137,7 +135,7 @@ contract Rebalancor is KeeperCompatibleInterface {
     // VIEW
     ////////////////////////////////////////////////////////////////////////////
 
-    function checkUpKeepInteligence() internal view returns (bool[] memory, uint256[] memory) {
+    function checkUpKeepInteligence() public view returns (bool[] memory, uint256[] memory) {
         return _checkUpKeepInteligence();
     }
 
@@ -154,7 +152,7 @@ contract Rebalancor is KeeperCompatibleInterface {
         // @note any logic for rebalancing could be implemented here
         (bool[] memory isRebalanceRequired, uint256[] memory rebalanceAmounts) = _checkUpKeepInteligence();
 
-        return (lastRebalance + cadence >= block.timestamp, abi.encode(isRebalanceRequired, rebalanceAmounts));
+        return (block.timestamp - lastRebalance >= cadence, abi.encode(isRebalanceRequired, rebalanceAmounts));
     }
 
     function _checkUpKeepInteligence() internal view returns (bool[] memory, uint256[] memory) {

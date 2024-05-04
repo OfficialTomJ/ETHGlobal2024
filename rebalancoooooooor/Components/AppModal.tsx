@@ -2,13 +2,19 @@ import { useEffect, useState } from "react";
 import Head from "next/head";
 import Popup from "./Popup"; // Import Popup component
 import { useAccount, useDisconnect, useEnsName } from "wagmi";
+import { FiCheckCircle } from "react-icons/fi";
 
 import { useReadContract } from "wagmi";
 import { abi } from "../abi/abi";
 
 export default function AppModal() {
   const [showPopup, setShowPopup] = useState(false);
-  const [walletPools, setWalletPools] = useState([]);
+  const [walletPools, setWalletPools] = useState([
+    {
+      name: "Pool 1",
+      address: "0xb012f5b6ed5879e94b6f83a021da2b1088969777",
+    },
+  ]);
   const [poolCounter, setPoolCounter] = useState(0);
   const account = useAccount();
 
@@ -34,9 +40,13 @@ export default function AppModal() {
     if (result.data !== undefined) {
       const parsedPoolCounter = parseInt(result.data.toString());
       setPoolCounter(parsedPoolCounter);
-      console.log(parsedPoolCounter);
     }
   }, [account.address, result]);
+
+  useEffect(() => {
+    //Fetch all pools and the address
+    
+  }, [poolCounter]);
 
   return (
     <div className="container">
@@ -46,7 +56,21 @@ export default function AppModal() {
       </Head>
 
       <main>
-        <h1 className="title">No Pools Found</h1>
+        {poolCounter !== 0 ? (
+          <h1 className="title">No Pools Found</h1>
+        ) : (
+          <div className="pool-grid">
+            {/* Render grid of available pools */}
+            {walletPools.map((pool, index) => (
+              <div className="pool" key={index}>
+                {/* Add icon and heading for each pool */}
+                <FiCheckCircle className="icon" />
+                <h2>{pool.name}</h2>
+                <h3>{pool.address}</h3>
+              </div>
+            ))}
+          </div>
+        )}
 
         <button className="create-pool-button" onClick={handleCreatePool}>
           Create a Pool
@@ -95,6 +119,14 @@ export default function AppModal() {
         .title {
           font-size: 2rem;
           margin-bottom: 1rem;
+        }
+
+        .pool {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          border: 1px solid black;
+          padding: 10px;
         }
 
         .create-pool-button {

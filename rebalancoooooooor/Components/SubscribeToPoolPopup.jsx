@@ -23,6 +23,7 @@ export default function SubscribePopup({ onClose }) {
 
   const handleSubscribe = () => {
     // Logic to handle subscription
+    console.log("Make!");
   };
 
   return (
@@ -99,7 +100,7 @@ export default function SubscribePopup({ onClose }) {
         <button className="subscribe-button" onClick={handleSubscribe} disabled={isDisabled}>
           Subscribe now
         </button>
-        <button className="withdraw-button" onClick={handleSubscribe} disabled={true}>
+        <button className="withdraw-button" onClick={handleWithdraw} disabled={true}>
           Withdraw Funds
         </button>
       </div>

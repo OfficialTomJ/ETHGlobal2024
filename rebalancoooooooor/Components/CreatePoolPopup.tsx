@@ -7,6 +7,7 @@ export default function PopUp({ onClose }) {
     ETH: 0,
     DAI: 0,
   });
+  const [poolName, setPoolName] = useState("");
 
   const handleInputChange = (asset, value) => {
     const total = Object.values(subscriptionAmounts).reduce(
@@ -25,11 +26,11 @@ export default function PopUp({ onClose }) {
     (acc, curr) => acc + parseFloat(curr),
     0
   );
-  const isDisabled = total !== 100;
+  const isDisabled = total !== 100 || !poolName;
 
-  const handleSubscribe = () => {
-    // Logic to handle subscription
-  };
+  const handleCreatePool = () => {
+
+  }; 
 
   return (
     <div className="popup subscribePool">
@@ -40,7 +41,12 @@ export default function PopUp({ onClose }) {
         <h2>Create a New Pool</h2>
         <div className="pool-name">
           <h3>Pool Name</h3>
-          <input type="text" placeholder="Enter pool name" />
+          <input
+            type="text"
+            placeholder="Enter pool name"
+            value={poolName}
+            onChange={(e) => setPoolName(e.target.value)}
+          />
         </div>
         <div className="select-crypto">
           <h3>Select Cryptocurrencies</h3>
@@ -108,7 +114,7 @@ export default function PopUp({ onClose }) {
         </div>
         <button
           className="subscribe-button"
-          onClick={handleSubscribe}
+          onClick={handleCreatePool}
           disabled={isDisabled}
         >
           Create now

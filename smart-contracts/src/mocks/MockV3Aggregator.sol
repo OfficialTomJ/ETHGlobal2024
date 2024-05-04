@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 contract MockV3Aggregator {
+    string public name;
     uint8 public decimals;
     int256 public latestAnswer;
     uint256 public latestTimestamp;
@@ -11,7 +12,8 @@ contract MockV3Aggregator {
     mapping(uint256 => uint256) public getTimestamp;
     mapping(uint256 => uint256) private getStartedAt;
 
-    constructor(uint8 _decimals, int256 _initialAnswer) {
+    constructor(string memory _name, uint8 _decimals, int256 _initialAnswer) {
+        name = _name;
         decimals = _decimals;
         updateAnswer(_initialAnswer);
     }

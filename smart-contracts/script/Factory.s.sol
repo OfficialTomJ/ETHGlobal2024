@@ -11,7 +11,8 @@ import {Factory} from "../src/RebalancorFactory.sol";
 
 contract FactoryScript is Script {
     Factory factory;
-    MockV3Aggregator oracleMock;
+    MockV3Aggregator oracleMockDaiUsd;
+    MockV3Aggregator oracleMockWethUsd;
 
     ILink constant LINK = ILink(0x779877A7B0D9E8603169DdbD7836e478b4624789);
 
@@ -23,6 +24,9 @@ contract FactoryScript is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         factory = new Factory();
+
+        oracleMockDaiUsd = new MockV3Aggregator("DAI/USD", 8, 100000000);
+        oracleMockWethUsd = new MockV3Aggregator("WETH/USD", 8, 310972000000);
 
         LINK.transfer(address(factory), TOP_UP_AMOUNT);
     }

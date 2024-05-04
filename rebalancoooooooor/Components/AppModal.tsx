@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Head from "next/head";
-import Popup from "./Popup"; // Import Popup component
+import Popup from "./SubscribeToPoolPopup"; // Import Popup component
 import { useAccount, useEnsName } from "wagmi";
 
 export default function AppModal() {

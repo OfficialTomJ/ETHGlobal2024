@@ -1,6 +1,6 @@
 export default function Popup({ onClose }) {
   return (
-    <div className="popup">
+    <div className="popup createPool">
       <div className="popup-content">
         <span className="close" onClick={onClose}>
           <p className="close-icon">x</p>

@@ -7,6 +7,8 @@ export default function PopUp({ onClose }) {
     ETH: 0,
     DAI: 0,
   });
+  const [poolName, setPoolName] = useState("");
+  const [rebalanceFrequency, setRebalanceFrequency] = useState(300);
 
   const handleInputChange = (asset, value) => {
     const total = Object.values(subscriptionAmounts).reduce(
@@ -25,11 +27,18 @@ export default function PopUp({ onClose }) {
     (acc, curr) => acc + parseFloat(curr),
     0
   );
-  const isDisabled = total !== 100;
+  const isDisabled = total !== 100 || !poolName || !rebalanceFrequency;
 
-  const handleSubscribe = () => {
-    // Logic to handle subscription
-  };
+  const handleCreatePool = () => {
+    const poolData = {
+      name: poolName,
+      alloc1: subscriptionAmounts.WBTC * 100,
+      alloc2: subscriptionAmounts.ETH * 100,
+      alloc3: subscriptionAmounts.DAI * 100,
+      freq: parseInt(rebalanceFrequency),
+    };
+    
+  }; 
 
   return (
     <div className="popup subscribePool">
@@ -40,7 +49,12 @@ export default function PopUp({ onClose }) {
         <h2>Create a New Pool</h2>
         <div className="pool-name">
           <h3>Pool Name</h3>
-          <input type="text" placeholder="Enter pool name" />
+          <input
+            type="text"
+            placeholder="Enter pool name"
+            value={poolName}
+            onChange={(e) => setPoolName(e.target.value)}
+          />
         </div>
         <div className="select-crypto">
           <h3>Select Cryptocurrencies</h3>
@@ -100,15 +114,21 @@ export default function PopUp({ onClose }) {
         </div>
         <div className="rebalance-frequency">
           <h3>Rebalance Frequency</h3>
-          <select>
-            <option value="Daily">Daily</option>
-            <option value="Weekly">Weekly</option>
-            <option value="Monthly">Monthly</option>
+          <select
+            value={rebalanceFrequency}
+            onChange={(e) => setRebalanceFrequency(e.target.value)}
+          >
+            <option value="300">5 MINS</option> {/* 5 minutes = 300 seconds */}
+            <option value="86400">Daily</option> {/* 1 day = 86400 seconds */}
+            <option value="604800">Weekly</option>{" "}
+            {/* 1 week = 604800 seconds */}
+            <option value="2592000">Monthly</option>{" "}
+            {/* 30 days (approx) = 2592000 seconds */}
           </select>
         </div>
         <button
           className="subscribe-button"
-          onClick={handleSubscribe}
+          onClick={handleCreatePool}
           disabled={isDisabled}
         >
           Create now

@@ -1,31 +1,52 @@
+"use client"
 import { useEffect, useState } from "react";
 import Head from "next/head";
 import PoolPopup from "./CreatePoolPopup";
 import { useAccount, useDisconnect, useEnsName } from "wagmi";
 import { FiCheckCircle } from "react-icons/fi";
 
-import { useReadContract } from "wagmi";
+import { useReadContract, useReadContracts } from "wagmi";
 import { abi } from "../abi/abi";
 import ConfigPopup from "./SubscribeToPoolPopup";
 
 export default function AppModal() {
   const [showPoolPopup, setShowPoolPopup] = useState(false);
   const [showConfigPopup, setShowConfigPopup] = useState(false);
-  const [walletPools, setWalletPools] = useState([
-    {
-      name: "Pool 1",
-      address: "0xb012f5b6ed5879e94b6f83a021da2b1088969777",
-    },
-  ]);
+  const [walletPools, setWalletPools] = useState([]);
   const [poolCounter, setPoolCounter] = useState(0);
+  const [scaffoldPools, setScaffoldPools] = useState();
   const account = useAccount();
 
   const result = useReadContract({
     abi,
-    address: "0xb012F5B6Ed5879e94b6f83a021dA2b1088969777",
+    address: "0x3DD15916591bd382C9462871Bce3729bEb43E586",
     functionName: "smartPoolCount",
     args: [account.address],
   });
+
+  const firstPool = useReadContract({
+    abi,
+    address: "0x3DD15916591bd382C9462871Bce3729bEb43E586",
+    functionName: "smartPools",
+    args: [account.address, 0],
+  });
+
+  useEffect(() => {
+
+    if (firstPool && firstPool.data) {
+      console.log(firstPool.data);
+      let poolObject =
+        [{
+          name: firstPool.data[0],
+          address: firstPool.data[1],
+        }];
+      setWalletPools(poolObject);
+    } else {
+      // Handle the case where firstPool or firstPool.data is undefined
+      console.error("Data is undefined");
+    }
+
+  }, [account.address]);
 
   const handleOpenPoolPopup = () => {
     setShowPoolPopup(true);
@@ -43,21 +64,6 @@ export default function AppModal() {
     setShowConfigPopup(false);
   };
 
-    
-  useEffect(() => {
-    console.log(account.address, result);
-
-    if (result.data !== undefined) {
-      const parsedPoolCounter = parseInt(result.data.toString());
-      setPoolCounter(parsedPoolCounter);
-    }
-  }, [account.address, result]);
-
-  useEffect(() => {
-    //Fetch all pools and the address
-    
-  }, [poolCounter]);
-
   return (
     <div className="container">
       <Head>
@@ -67,7 +73,11 @@ export default function AppModal() {
 
       <main>
         {poolCounter !== 0 ? (
-          <h1 className="title">No Pools Found</h1>
+          <h1 className="title">
+            {account.address
+              ? "No Pools Found"
+              : "Connect your wallet to use Rebalancoooooooor ⚖️"}
+          </h1>
         ) : (
           <div className="pool-grid">
             {/* Render grid of available pools */}
@@ -82,7 +92,10 @@ export default function AppModal() {
           </div>
         )}
 
-        <button className="create-pool-button" onClick={handleOpenPoolPopup}>
+        <button
+          className="create-pool-button"
+          onClick={handleOpenPoolPopup}
+        >
           Create a Pool
         </button>
 

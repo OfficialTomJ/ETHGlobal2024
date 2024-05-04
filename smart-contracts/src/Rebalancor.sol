@@ -147,17 +147,16 @@ contract Rebalancor is KeeperCompatibleInterface {
         uint256 totalUsd;
         for (uint256 i = 0; i < _assets.length; i++) {
             address token = assets.at(i);
-            uint256 price = _fetchPriceFeed(assetToOracle[token], 1 hours);
+            uint256 price = _fetchPriceFeed(assetToOracle[token], 2 hours);
             uint256 balance = IERC20(token).balanceOf(address(this));
-            // check the decimals??
             totalUsd += balance * price;
         }
+
         return (lastRebalance + cadence >= block.timestamp, "");
     }
 
     function performUpkeep(bytes calldata _performData) external override onlyKeeper {
         address member = abi.decode(_performData, (address));
-
         lastRebalance = block.timestamp;
     }
 

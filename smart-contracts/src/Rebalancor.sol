@@ -183,11 +183,11 @@ contract Rebalancor is KeeperCompatibleInterface {
         for (uint256 i = 0; i < _weights.length; i++) {
             _currentWeights[i] = (_cachedBalances[i] * _cachedPrices[i] * 1e18) / totalUsd;
             if (_currentWeights[i] > _weights[i] + DEVIATION_THRESHOLD) {
-                // @note it is over weight
+                // @note it is over weight, take profit!
                 _rebalanceIsRequired[i] = true;
                 _rebalanceAmounts[i] = (_cachedBalances[i] * DEVIATION_THRESHOLD) / MAX_BPS;
             } else if (_currentWeights[i] < _weights[i] - DEVIATION_THRESHOLD) {
-                // @note it is under weight
+                // @note it is under weight, stop loss!
                 _rebalanceIsRequired[i] = true;
                 _rebalanceAmounts[i] = (_cachedBalances[i] * DEVIATION_THRESHOLD) / MAX_BPS;
             }
@@ -203,11 +203,11 @@ contract Rebalancor is KeeperCompatibleInterface {
         address[] memory _assets = assets.values();
         for (uint256 i = 0; i < _assets.length; i++) {
             if (isRebalanceRequired[i]) {
-                // @note simple swap for WETH for now
+                // @note simple swap for LINK for now
                 address token = assets.at(i);
                 address[] memory path = new address[](2);
                 path[0] = token;
-                path[1] = WETH;
+                path[1] = LINK;
                 AMM.swapTokensForExactTokens(rebalanceAmounts[i], 0, path, address(this), block.timestamp);
             }
         }

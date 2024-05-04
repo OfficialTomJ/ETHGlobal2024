@@ -32,6 +32,9 @@ contract Factory {
     // eoa -> smart pool count deployed
     mapping(address => uint256) public smartPoolCount;
 
+    // asset -> mock oracle
+    mapping(address => address) public mockOracles;
+
     error UpkeepZero();
 
     constructor() {
@@ -49,7 +52,7 @@ contract Factory {
         uint256[] memory _weights,
         uint256 _cadence
     ) external returns (address) {
-        address rebalancor = address(new Rebalancor(msg.sender, _poolName, _assets, _weights, _cadence));
+        address rebalancor = address(new Rebalancor(msg.sender, _poolName, _assets, _weights, _cadence, address(this)));
 
         uint256 upkeepId = _registerSmartPoolUpkeep(_poolName, rebalancor);
 
@@ -57,6 +60,17 @@ contract Factory {
         smartPoolCount[msg.sender] += 1;
 
         return rebalancor;
+    }
+
+    /// @param _asset The address of the asset to set the mock oracle.
+    /// @param _oracle The address of the mock oracle.
+    function setMockOracle(address _asset, address _oracle) external {
+        mockOracles[_asset] = _oracle;
+    }
+
+    /// @param _asset The address of the asset to query the mock oracle.
+    function getMockOracle(address _asset) external view returns (address) {
+        return mockOracles[_asset];
     }
 
     ////////////////////////////////////////////////////////////////////////////

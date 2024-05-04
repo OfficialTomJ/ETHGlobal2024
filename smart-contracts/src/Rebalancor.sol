@@ -10,6 +10,8 @@ import {KeeperCompatibleInterface} from "./interfaces/chainlink/KeeperCompatible
 
 import {IRouterV2} from "./interfaces/uniswap/IRouterV2.sol";
 
+import {IRebalancorFactory} from "./interfaces/IRebalancorFactory.sol";
+
 contract Rebalancor is KeeperCompatibleInterface {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
@@ -43,6 +45,8 @@ contract Rebalancor is KeeperCompatibleInterface {
 
     address public poolOwner;
 
+    IRebalancorFactory public factory;
+
     string public poolName;
 
     uint256 public cadence;
@@ -71,17 +75,16 @@ contract Rebalancor is KeeperCompatibleInterface {
         string memory _poolName,
         address[] memory _assets,
         uint256[] memory _weights,
-        uint256 _cadence
+        uint256 _cadence,
+        address _factory
     ) {
         poolOwner = _poolOwner;
 
         poolName = _poolName;
 
-        _subscribe(_assets, _weights, _cadence);
+        factory = IRebalancorFactory(_factory);
 
-        assetToOracle[WBTC] = CL_BTC_USD;
-        assetToOracle[LINK] = CL_LINK_USD;
-        assetToOracle[DAI] = CL_DAI_USD;
+        _subscribe(_assets, _weights, _cadence);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -174,7 +177,7 @@ contract Rebalancor is KeeperCompatibleInterface {
         uint256 totalUsd;
         for (uint256 i = 0; i < _assets.length; i++) {
             address token = assets.at(i);
-            uint256 price = _fetchPriceFeed(assetToOracle[token], 2 hours);
+            uint256 price = _fetchPriceFeed(factory.getMockOracle(token), 2 hours);
             _cachedPrices[i] = price;
             uint256 balance = IERC20(token).balanceOf(address(this));
             _cachedBalances[i] = balance;

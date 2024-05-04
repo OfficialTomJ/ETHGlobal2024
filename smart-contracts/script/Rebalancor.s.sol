@@ -24,6 +24,6 @@ contract RebalancorScript is Script {
         weights[0] = 5_000;
         weights[1] = 5_000;
 
-        rebalancor = new Rebalancor(deployer, "DUMMY-PLACER-FOR-VERIFICATIONS", tokens, weights, 1 hours);
+        rebalancor = new Rebalancor(deployer, "DUMMY-PLACER-FOR-VERIFICATIONS", tokens, weights, 1 hours, address(0));
     }
 }

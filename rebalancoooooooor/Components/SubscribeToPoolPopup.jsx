@@ -99,6 +99,9 @@ export default function SubscribePopup({ onClose }) {
         <button className="subscribe-button" onClick={handleSubscribe} disabled={isDisabled}>
           Subscribe now
         </button>
+        <button className="withdraw-button" onClick={handleSubscribe} disabled={true}>
+          Withdraw Funds
+        </button>
       </div>
 
       <style jsx>{`
@@ -219,6 +222,18 @@ export default function SubscribePopup({ onClose }) {
           cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
           transition: background-color 0.3s ease;
           opacity: ${isDisabled ? '0.6' : '1'};
+        }
+
+        .withdraw-button {
+          padding: 0.5rem 1rem;
+          font-size: 1rem;
+          border-radius: 5px;
+          background-color: ${true ? '#6c757d' : '#0070f3'};
+          color: white;
+          border: none;
+          cursor: ${true ? 'not-allowed' : 'pointer'};
+          transition: background-color 0.3s ease;
+          opacity: ${true ? '0.6' : '1'};
         }
 
         .subscribe-button:hover {

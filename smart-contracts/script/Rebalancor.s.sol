@@ -21,9 +21,16 @@ contract RebalancorScript is Script {
         tokens[1] = LINK;
 
         uint256[] memory weights = new uint256[](2);
-        weights[0] = 5_000;
-        weights[1] = 5_000;
+        weights[0] = 6_000;
+        weights[1] = 4_000;
 
-        rebalancor = new Rebalancor(deployer, "DUMMY-PLACER-FOR-VERIFICATIONS", tokens, weights, 1 hours, address(0));
+        rebalancor = new Rebalancor(
+            deployer,
+            "DUMMY-PLACER-FOR-VERIFICATIONS",
+            tokens,
+            weights,
+            1 hours,
+            address(0x63E5B6398A1779CF5620580b26296BE42FF46080)
+        );
     }
 }

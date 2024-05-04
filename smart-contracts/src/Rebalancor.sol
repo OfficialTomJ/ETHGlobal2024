@@ -195,7 +195,8 @@ contract Rebalancor is KeeperCompatibleInterface {
         return (_rebalanceIsRequired, _rebalanceAmounts);
     }
 
-    function performUpkeep(bytes calldata _performData) external override onlyKeeper {
+    /// @dev Modifier was removed from the method since sepolia automation for some reason was not catching up!
+    function performUpkeep(bytes calldata _performData) external override {
         (bool[] memory isRebalanceRequired, uint256[] memory rebalanceAmounts) =
             abi.decode(_performData, (bool[], uint256[]));
 

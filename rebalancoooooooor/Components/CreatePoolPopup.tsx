@@ -107,6 +107,7 @@ export default function PopUp({ onClose }) {
         <div className="rebalance-frequency">
           <h3>Rebalance Frequency</h3>
           <select>
+            <option value="5mins">5 MINS</option>
             <option value="Daily">Daily</option>
             <option value="Weekly">Weekly</option>
             <option value="Monthly">Monthly</option>

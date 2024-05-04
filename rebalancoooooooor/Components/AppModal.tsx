@@ -66,8 +66,12 @@ export default function AppModal() {
       </Head>
 
       <main>
-        {poolCounter !== 0 ? (
-          <h1 className="title">No Pools Found</h1>
+        {poolCounter === 0 ? (
+          <h1 className="title">
+            {account.address
+              ? "No Pools Found"
+              : "Connect your wallet to use Rebalancoooooooor ⚖️"}
+          </h1>
         ) : (
           <div className="pool-grid">
             {/* Render grid of available pools */}
@@ -82,9 +86,11 @@ export default function AppModal() {
           </div>
         )}
 
-        <button className="create-pool-button" onClick={handleOpenPoolPopup}>
-          Create a Pool
-        </button>
+        {account.address && (
+          <button className="create-pool-button" onClick={handleOpenPoolPopup}>
+            Create a Pool
+          </button>
+        )}
 
         {/* Render Popup component if showPopup is true */}
         {showPoolPopup && <PoolPopup onClose={handleClosePoolPopup} />}

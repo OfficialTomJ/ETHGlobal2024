@@ -8,6 +8,7 @@ export default function PopUp({ onClose }) {
     DAI: 0,
   });
   const [poolName, setPoolName] = useState("");
+  const [rebalanceFrequency, setRebalanceFrequency] = useState(300);
 
   const handleInputChange = (asset, value) => {
     const total = Object.values(subscriptionAmounts).reduce(
@@ -26,10 +27,17 @@ export default function PopUp({ onClose }) {
     (acc, curr) => acc + parseFloat(curr),
     0
   );
-  const isDisabled = total !== 100 || !poolName;
+  const isDisabled = total !== 100 || !poolName || !rebalanceFrequency;
 
   const handleCreatePool = () => {
-
+    const poolData = {
+      name: poolName,
+      alloc1: subscriptionAmounts.WBTC * 100,
+      alloc2: subscriptionAmounts.ETH * 100,
+      alloc3: subscriptionAmounts.DAI * 100,
+      freq: parseInt(rebalanceFrequency),
+    };
+    
   }; 
 
   return (
@@ -106,11 +114,16 @@ export default function PopUp({ onClose }) {
         </div>
         <div className="rebalance-frequency">
           <h3>Rebalance Frequency</h3>
-          <select>
-            <option value="5mins">5 MINS</option>
-            <option value="Daily">Daily</option>
-            <option value="Weekly">Weekly</option>
-            <option value="Monthly">Monthly</option>
+          <select
+            value={rebalanceFrequency}
+            onChange={(e) => setRebalanceFrequency(e.target.value)}
+          >
+            <option value="300">5 MINS</option> {/* 5 minutes = 300 seconds */}
+            <option value="86400">Daily</option> {/* 1 day = 86400 seconds */}
+            <option value="604800">Weekly</option>{" "}
+            {/* 1 week = 604800 seconds */}
+            <option value="2592000">Monthly</option>{" "}
+            {/* 30 days (approx) = 2592000 seconds */}
           </select>
         </div>
         <button

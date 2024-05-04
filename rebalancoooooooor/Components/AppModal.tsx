@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import Head from "next/head";
-import PoolPopup from "./Popup"; // Import Popup component
+import PoolPopup from "./CreatePoolPopup";
 import { useAccount, useDisconnect, useEnsName } from "wagmi";
 import { FiCheckCircle } from "react-icons/fi";
 
 import { useReadContract } from "wagmi";
 import { abi } from "../abi/abi";
-import ConfigPopup from "./SubscribeToPoolPopup"; // Import Popup component
+import ConfigPopup from "./SubscribeToPoolPopup";
 
 export default function AppModal() {
-  const [showPopup, setShowPopup] = useState(false);
+  const [showPoolPopup, setShowPoolPopup] = useState(false);
+  const [showConfigPopup, setShowConfigPopup] = useState(false);
   const [walletPools, setWalletPools] = useState([
     {
       name: "Pool 1",
@@ -26,12 +27,20 @@ export default function AppModal() {
     args: [account.address],
   });
 
-  const handleCreatePool = () => {
-    setShowPopup(true);
+  const handleOpenPoolPopup = () => {
+    setShowPoolPopup(true);
   };
 
-  const handleClosePopup = () => {
-    setShowPopup(false);
+  const handleClosePoolPopup = () => {
+    setShowPoolPopup(false);
+  };
+
+  const handleOpenConfigPopup = () => {
+    setShowConfigPopup(true);
+  };
+
+  const handleCloseConfigPopup = () => {
+    setShowConfigPopup(false);
   };
 
     
@@ -57,13 +66,13 @@ export default function AppModal() {
       </Head>
 
       <main>
-        {poolCounter === 0 ? (
+        {poolCounter !== 0 ? (
           <h1 className="title">No Pools Found</h1>
         ) : (
           <div className="pool-grid">
             {/* Render grid of available pools */}
             {walletPools.map((pool, index) => (
-              <div className="pool" key={index}>
+              <div className="pool" key={index} onClick={handleOpenConfigPopup}>
                 {/* Add icon and heading for each pool */}
                 <FiCheckCircle className="icon" />
                 <h2>{pool.name}</h2>
@@ -73,12 +82,13 @@ export default function AppModal() {
           </div>
         )}
 
-        <button className="create-pool-button" onClick={handleCreatePool}>
+        <button className="create-pool-button" onClick={handleOpenPoolPopup}>
           Create a Pool
         </button>
 
         {/* Render Popup component if showPopup is true */}
-        {showPopup && <Popup onClose={handleClosePopup} />}
+        {showPoolPopup && <PoolPopup onClose={handleClosePoolPopup} />}
+        {showConfigPopup && <ConfigPopup onClose={handleCloseConfigPopup} />}
       </main>
 
       <footer>

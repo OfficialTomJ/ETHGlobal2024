@@ -73,7 +73,7 @@ contract Factory {
             checkData: "",
             triggerConfig: "",
             offchainConfig: "",
-            amount: 50e18
+            amount: 10e18
         });
 
         upkeepID_ = CL_REGISTRAR.registerUpkeep(registrationParams);

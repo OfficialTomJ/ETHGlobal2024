@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Head from "next/head";
 import Popup from "./Popup"; // Import Popup component
-import { useAccount, useEnsName } from "wagmi";
+import { useAccount, useDisconnect, useEnsName } from "wagmi";
 
 import { useReadContract } from "wagmi";
 import { abi } from "../abi/abi";
@@ -9,13 +9,15 @@ import { abi } from "../abi/abi";
 export default function AppModal() {
   const [showPopup, setShowPopup] = useState(false);
   const [walletPools, setWalletPools] = useState([]);
+  const [poolCounter, setPoolCounter] = useState(0);
   const account = useAccount();
 
   const result = useReadContract({
     abi,
     address: "0xb012F5B6Ed5879e94b6f83a021dA2b1088969777",
     functionName: "smartPoolCount",
-  }).data;
+    args: [account.address],
+  });
 
   const handleCreatePool = () => {
     setShowPopup(true);
@@ -27,11 +29,14 @@ export default function AppModal() {
 
     
   useEffect(() => {
-    if (account.address) {
-      console.log(result);
+    console.log(account.address, result);
+
+    if (result.data !== undefined) {
+      const parsedPoolCounter = parseInt(result.data.toString());
+      setPoolCounter(parsedPoolCounter);
+      console.log(parsedPoolCounter);
     }
-  }, [account.address]);
-  
+  }, [account.address, result]);
 
   return (
     <div className="container">

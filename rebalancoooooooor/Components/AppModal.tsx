@@ -56,7 +56,7 @@ export default function AppModal() {
       </Head>
 
       <main>
-        {poolCounter !== 0 ? (
+        {poolCounter === 0 ? (
           <h1 className="title">No Pools Found</h1>
         ) : (
           <div className="pool-grid">

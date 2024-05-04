@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FaBitcoin, FaEthereum, FaDollarSign } from "react-icons/fa";
+import { useSignMessage } from "wagmi";
 
 export default function PopUp({ onClose }) {
   const [subscriptionAmounts, setSubscriptionAmounts] = useState({
@@ -23,6 +24,10 @@ export default function PopUp({ onClose }) {
     }));
   };
 
+  const { signMessage } = useSignMessage();
+
+  const message = signMessage({ message: "Create New Pool" });
+
   const total = Object.values(subscriptionAmounts).reduce(
     (acc, curr) => acc + parseFloat(curr),
     0
@@ -37,7 +42,6 @@ export default function PopUp({ onClose }) {
       alloc3: subscriptionAmounts.DAI * 100,
       freq: parseInt(rebalanceFrequency),
     };
-    
   }; 
 
   return (
@@ -128,7 +132,7 @@ export default function PopUp({ onClose }) {
         </div>
         <button
           className="subscribe-button"
-          onClick={handleCreatePool}
+          onClick={() => signMessage({ message: "Creating " })}
           disabled={isDisabled}
         >
           Create now

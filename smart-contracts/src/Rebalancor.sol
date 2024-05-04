@@ -8,6 +8,8 @@ import {EnumerableSet} from "@oz/utils/structs/EnumerableSet.sol";
 import {IAggregatorV3} from "./interfaces/chainlink/IAggregatorV3.sol";
 import {KeeperCompatibleInterface} from "./interfaces/chainlink/KeeperCompatibleInterface.sol";
 
+import {IRouterV2} from "./interfaces/uniswap/IRouterV2.sol";
+
 contract Rebalancor is KeeperCompatibleInterface {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
@@ -16,12 +18,15 @@ contract Rebalancor is KeeperCompatibleInterface {
     // CONSTANTS
     ////////////////////////////////////////////////////////////////////////////
 
+    uint256 constant MAX_BPS = 10_000;
+    uint256 constant DEVIATION_THRESHOLD = 1_000;
+
     address constant WBTC = 0x29f2D40B0605204364af54EC677bD022dA425d03;
     address constant LINK = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
     address constant DAI = 0xFF34B3d4Aee8ddCd6F9AFFFB6Fe49bD371b8a357;
     address constant WETH = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9;
 
-    address constant AMM = 0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008;
+    IRouterV2 constant AMM = IRouterV2(payable(0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008));
 
     // automation registry
     address constant REGISTRY_CL = 0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad;
@@ -96,7 +101,7 @@ contract Rebalancor is KeeperCompatibleInterface {
         for (uint256 i = 0; i < _assets.length; i++) {
             assets.add(_assets[i]);
             weights.add(_weights[i]);
-            IERC20(_assets[i]).approve(AMM, type(uint256).max);
+            IERC20(_assets[i]).approve(address(AMM), type(uint256).max);
         }
 
         cadence = _cadence;
@@ -133,6 +138,14 @@ contract Rebalancor is KeeperCompatibleInterface {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // VIEW
+    ////////////////////////////////////////////////////////////////////////////
+
+    function checkUpKeepInteligence() internal view returns (bool[] memory, uint256[] memory) {
+        return _checkUpKeepInteligence();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     // EXTERNAL: Keeper
     ////////////////////////////////////////////////////////////////////////////
 
@@ -142,21 +155,63 @@ contract Rebalancor is KeeperCompatibleInterface {
         override
         returns (bool upkeepNeeded_, bytes memory performData_)
     {
+        // @note any logic for rebalancing could be implemented here
+        (bool[] memory isRebalanceRequired, uint256[] memory rebalanceAmounts) = _checkUpKeepInteligence();
+
+        return (lastRebalance + cadence >= block.timestamp, abi.encode(isRebalanceRequired, rebalanceAmounts));
+    }
+
+    function _checkUpKeepInteligence() internal view returns (bool[] memory, uint256[] memory) {
         address[] memory _assets = assets.values();
+        uint256[] memory _cachedPrices = new uint256[](_assets.length);
+        uint256[] memory _cachedBalances = new uint256[](_assets.length);
 
         uint256 totalUsd;
         for (uint256 i = 0; i < _assets.length; i++) {
             address token = assets.at(i);
             uint256 price = _fetchPriceFeed(assetToOracle[token], 2 hours);
+            _cachedPrices[i] = price;
             uint256 balance = IERC20(token).balanceOf(address(this));
+            _cachedBalances[i] = balance;
             totalUsd += balance * price;
         }
 
-        return (lastRebalance + cadence >= block.timestamp, "");
+        uint256[] memory _weights = weights.values();
+        uint256[] memory _currentWeights = new uint256[](_weights.length);
+        bool[] memory _rebalanceIsRequired = new bool[](_weights.length);
+        uint256[] memory _rebalanceAmounts = new uint256[](_weights.length);
+        for (uint256 i = 0; i < _weights.length; i++) {
+            _currentWeights[i] = (_cachedBalances[i] * _cachedPrices[i] * 1e18) / totalUsd;
+            if (_currentWeights[i] > _weights[i] + DEVIATION_THRESHOLD) {
+                // @note it is over weight
+                _rebalanceIsRequired[i] = true;
+                _rebalanceAmounts[i] = (_cachedBalances[i] * DEVIATION_THRESHOLD) / MAX_BPS;
+            } else if (_currentWeights[i] < _weights[i] - DEVIATION_THRESHOLD) {
+                // @note it is under weight
+                _rebalanceIsRequired[i] = true;
+                _rebalanceAmounts[i] = (_cachedBalances[i] * DEVIATION_THRESHOLD) / MAX_BPS;
+            }
+        }
+
+        return (_rebalanceIsRequired, _rebalanceAmounts);
     }
 
     function performUpkeep(bytes calldata _performData) external override onlyKeeper {
-        address member = abi.decode(_performData, (address));
+        (bool[] memory isRebalanceRequired, uint256[] memory rebalanceAmounts) =
+            abi.decode(_performData, (bool[], uint256[]));
+
+        address[] memory _assets = assets.values();
+        for (uint256 i = 0; i < _assets.length; i++) {
+            if (isRebalanceRequired[i]) {
+                // @note simple swap for WETH for now
+                address token = assets.at(i);
+                address[] memory path = new address[](2);
+                path[0] = token;
+                path[1] = WETH;
+                AMM.swapTokensForExactTokens(rebalanceAmounts[i], 0, path, address(this), block.timestamp);
+            }
+        }
+
         lastRebalance = block.timestamp;
     }
 

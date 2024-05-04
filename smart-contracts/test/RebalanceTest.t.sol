@@ -55,7 +55,9 @@ contract RebalanceTest is BaseFixture {
         deal(address(LINK), DEPLOYER, 1_000_000e18);
 
         vm.prank(DEPLOYER);
-        AMM.addLiquidity(DAI, address(LINK), 1_000_000e18, 1_000_000e18, 500_000e18, 200_000e18, DEPLOYER, block.timestamp);
+        AMM.addLiquidity(
+            DAI, address(LINK), 1_000_000e18, 1_000_000e18, 500_000e18, 200_000e18, DEPLOYER, block.timestamp
+        );
         vm.stopPrank();
 
         vm.prank(CL_REGISTRY);
@@ -63,5 +65,6 @@ contract RebalanceTest is BaseFixture {
 
         assertGt(prevWethBalance, IERC20(WETH).balanceOf(address(rebalancor)));
         assertGt(prevDaiBalance, IERC20(DAI).balanceOf(address(rebalancor)));
+        assertGt(LINK.balanceOf(address(rebalancor)), 0);
     }
 }

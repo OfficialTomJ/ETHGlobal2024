@@ -19,7 +19,7 @@ contract FactoryScript is Script {
 
     ILink constant LINK = ILink(0x779877A7B0D9E8603169DdbD7836e478b4624789);
 
-    uint256 constant TOP_UP_AMOUNT = 10e18;
+    uint256 constant TOP_UP_AMOUNT = 5e18;
 
     function run() public {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");

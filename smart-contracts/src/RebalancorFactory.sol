@@ -18,6 +18,8 @@ contract Factory {
     // CONSTANTS
     ////////////////////////////////////////////////////////////////////////////
 
+    uint96 constant TOP_UP_AMOUNT = 10e18;
+
     IKeeperRegistrar constant CL_REGISTRAR = IKeeperRegistrar(0xb0E49c5D0d05cbc241d68c05BC5BA1d1B7B72976);
     IKeeperRegistry constant CL_REGISTRY = IKeeperRegistry(0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad);
     ILink constant LINK = ILink(0x779877A7B0D9E8603169DdbD7836e478b4624789);
@@ -25,6 +27,8 @@ contract Factory {
     ////////////////////////////////////////////////////////////////////////////
     // STORAGE
     ////////////////////////////////////////////////////////////////////////////
+
+    address public deployer;
 
     // eoa -> smart pools
     mapping(address => SmartPoolInfo[]) public smartPools;
@@ -38,6 +42,7 @@ contract Factory {
     error UpkeepZero();
 
     constructor() {
+        deployer = msg.sender;
         LINK.approve(address(CL_REGISTRAR), type(uint256).max);
     }
 
@@ -45,7 +50,10 @@ contract Factory {
     // EXTERNAL: SMART POOL CREATOR FUNCTION
     ////////////////////////////////////////////////////////////////////////////
 
-    /// @param _poolName The name of the pool
+    /// @param _poolName The name of the pool.
+    /// @param _assets The assets to be managed by the smart pool.
+    /// @param _weights The weights of the assets in the smart pool.
+    /// @param _cadence The cadence of the rebalance action.
     function createRebalancor(
         string memory _poolName,
         address[] memory _assets,
@@ -73,11 +81,17 @@ contract Factory {
         return mockOracles[_asset];
     }
 
+    /// @notice Simple method to pull out the LINK tokens from the contract to the deployer.
+    function pullLinkOut() external {
+        LINK.transfer(deployer, LINK.balanceOf(address(this)));
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // INTERNAL
     ////////////////////////////////////////////////////////////////////////////
 
-    /// @param _rebalancor The address of the rebalancor to be register in the automation registry
+    /// @param _poolName The name of the pool to be register in the automation registry.
+    /// @param _rebalancor The address of the rebalancor to be register in the automation registry.
     function _registerSmartPoolUpkeep(string memory _poolName, address _rebalancor)
         internal
         returns (uint256 upkeepID_)
@@ -92,7 +106,7 @@ contract Factory {
             checkData: "",
             triggerConfig: "",
             offchainConfig: "",
-            amount: 10e18
+            amount: TOP_UP_AMOUNT
         });
 
         upkeepID_ = CL_REGISTRAR.registerUpkeep(registrationParams);

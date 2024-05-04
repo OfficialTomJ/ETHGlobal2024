@@ -105,6 +105,7 @@ contract Rebalancor is KeeperCompatibleInterface {
     // EXTERNAL: Portfolio Config
     ////////////////////////////////////////////////////////////////////////////
 
+    /// @notice Pulls all specified assets from the pool owner to the pool.
     function pullAssets() external {
         address[] memory _assets = assets.values();
         for (uint256 i = 0; i < _assets.length; i++) {
@@ -135,6 +136,7 @@ contract Rebalancor is KeeperCompatibleInterface {
     // VIEW
     ////////////////////////////////////////////////////////////////////////////
 
+    /// @notice Returns the current state of the rebalancing needs.
     function checkUpKeepInteligence() public view returns (bool[] memory, uint256[] memory) {
         return _checkUpKeepInteligence();
     }
@@ -171,10 +173,10 @@ contract Rebalancor is KeeperCompatibleInterface {
         }
 
         uint256[] memory _weights = weights.values();
-        uint256[] memory _currentWeights = new uint256[](_weights.length);
-        bool[] memory _rebalanceIsRequired = new bool[](_weights.length);
-        uint256[] memory _rebalanceAmounts = new uint256[](_weights.length);
-        for (uint256 i = 0; i < _weights.length; i++) {
+        uint256[] memory _currentWeights = new uint256[](_assets.length);
+        bool[] memory _rebalanceIsRequired = new bool[](_assets.length);
+        uint256[] memory _rebalanceAmounts = new uint256[](_assets.length);
+        for (uint256 i = 0; i < _assets.length; i++) {
             _currentWeights[i] = (_cachedBalances[i] * _cachedPrices[i] * 1e18) / totalUsd;
             if (_currentWeights[i] > _weights[i] + DEVIATION_THRESHOLD) {
                 // @note it is over weight, take profit!
@@ -184,6 +186,9 @@ contract Rebalancor is KeeperCompatibleInterface {
                 // @note it is under weight, stop loss!
                 _rebalanceIsRequired[i] = true;
                 _rebalanceAmounts[i] = (_cachedBalances[i] * DEVIATION_THRESHOLD) / MAX_BPS;
+            } else {
+                _rebalanceIsRequired[i] = false;
+                _rebalanceAmounts[i] = 0;
             }
         }
 
@@ -213,8 +218,9 @@ contract Rebalancor is KeeperCompatibleInterface {
     // PUBLIC: Reads the portfolio config of an EOA
     ////////////////////////////////////////////////////////////////////////////
 
-    function getPortfolioConfig() external view returns (address[] memory, uint256[] memory) {
-        return (assets.values(), weights.values());
+    function getPortfolioConfig() external view returns (address[] memory assets_, uint256[] memory weights_) {
+        assets_ = assets.values();
+        weights_ = weights.values();
     }
 
     ////////////////////////////////////////////////////////////////////////////

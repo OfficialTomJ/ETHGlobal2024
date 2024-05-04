@@ -21,16 +21,14 @@ export default function AppModal() {
     abi,
     address: "0x3DD15916591bd382C9462871Bce3729bEb43E586",
     functionName: "smartPoolCount",
-    //TODO: CHANGE THIS BACK TO account.address
-    args: ["0xcb1c77846c34ea44f40b447fae0d2fdf2b4b5919"],
+    args: [account.address],
   });
 
   const firstPool = useReadContract({
     abi,
     address: "0x3DD15916591bd382C9462871Bce3729bEb43E586",
     functionName: "smartPools",
-    //TODO: CHANGE THIS BACK TO account.address
-    args: ["0xcb1c77846c34ea44f40b447fae0d2fdf2b4b5919", 0],
+    args: [account.address, 0],
   });
 
   useEffect(() => {

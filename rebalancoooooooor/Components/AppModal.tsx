@@ -1,11 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
-import Popup from "./SubscribeToPoolPopup"; // Import Popup component
-import { useAccount, useEnsName } from "wagmi";
+import PoolPopup from "./Popup"; // Import Popup component
+import { useAccount, useDisconnect, useEnsName } from "wagmi";
+import { FiCheckCircle } from "react-icons/fi";
+
+import { useReadContract } from "wagmi";
+import { abi } from "../abi/abi";
+import ConfigPopup from "./SubscribeToPoolPopup"; // Import Popup component
 
 export default function AppModal() {
   const [showPopup, setShowPopup] = useState(false);
-  const { address } = useAccount();
+  const [walletPools, setWalletPools] = useState([
+    {
+      name: "Pool 1",
+      address: "0xb012f5b6ed5879e94b6f83a021da2b1088969777",
+    },
+  ]);
+  const [poolCounter, setPoolCounter] = useState(0);
+  const account = useAccount();
+
+  const result = useReadContract({
+    abi,
+    address: "0xb012F5B6Ed5879e94b6f83a021dA2b1088969777",
+    functionName: "smartPoolCount",
+    args: [account.address],
+  });
 
   const handleCreatePool = () => {
     setShowPopup(true);
@@ -15,6 +34,21 @@ export default function AppModal() {
     setShowPopup(false);
   };
 
+    
+  useEffect(() => {
+    console.log(account.address, result);
+
+    if (result.data !== undefined) {
+      const parsedPoolCounter = parseInt(result.data.toString());
+      setPoolCounter(parsedPoolCounter);
+    }
+  }, [account.address, result]);
+
+  useEffect(() => {
+    //Fetch all pools and the address
+    
+  }, [poolCounter]);
+
   return (
     <div className="container">
       <Head>
@@ -23,7 +57,21 @@ export default function AppModal() {
       </Head>
 
       <main>
-        <h1 className="title">No Pools Found</h1>
+        {poolCounter === 0 ? (
+          <h1 className="title">No Pools Found</h1>
+        ) : (
+          <div className="pool-grid">
+            {/* Render grid of available pools */}
+            {walletPools.map((pool, index) => (
+              <div className="pool" key={index}>
+                {/* Add icon and heading for each pool */}
+                <FiCheckCircle className="icon" />
+                <h2>{pool.name}</h2>
+                <h3>{pool.address}</h3>
+              </div>
+            ))}
+          </div>
+        )}
 
         <button className="create-pool-button" onClick={handleCreatePool}>
           Create a Pool
@@ -72,6 +120,14 @@ export default function AppModal() {
         .title {
           font-size: 2rem;
           margin-bottom: 1rem;
+        }
+
+        .pool {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          border: 1px solid black;
+          padding: 10px;
         }
 
         .create-pool-button {

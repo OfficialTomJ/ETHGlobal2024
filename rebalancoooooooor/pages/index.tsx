@@ -9,15 +9,6 @@ import { mainnet, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 
-const config = createConfig({
-  chains: [mainnet, sepolia],
-  ssr: true,
-  transports: {
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
-  },
-});
-
 const queryClient = new QueryClient(); 
 
 const Home: NextPage = () => {
@@ -33,13 +24,9 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <WagmiProvider config={config}>
-          <QueryClientProvider client={queryClient}>  
             <ConnectButton />
 
             <AppModal/>
-            </QueryClientProvider>
-        </WagmiProvider>
       </main>
 
       <footer className={styles.footer}>
